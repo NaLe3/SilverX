@@ -1,18 +1,9 @@
 Rails.application.routes.draw do
   devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Health / status endpoints
   get "up" => "rails/health#show", as: :rails_health_check
   get "health" => "health#index"
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  root "admin/calls#index"
 
   resources :calls, only: [:index, :show, :create] do
     resources :messages, only: [:index, :create]
@@ -21,10 +12,16 @@ Rails.application.routes.draw do
   post "/tools/dispatch" => "tools#dispatch"
 
   namespace :admin do
+    resource :dashboard, controller: "dashboard", only: :show
     resources :calls, only: [:index, :show]
+
+    root to: "dashboard#show"
   end
 
   # Webhooks téléphonie (Twilio-like)
   post "/voice/inbound" => "voice#inbound"
   post "/voice/continue" => "voice#continue"
+
+  # Root of the application -> admin dashboard
+  root "admin/dashboard#show"
 end

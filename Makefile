@@ -1,12 +1,16 @@
-.PHONY: up down restart build ps logs rails-shell rails-console migrate rollback db-prepare db-reset seed test clean
+.PHONY: up dev down restart build ps logs rails-shell rails-console migrate rollback db-prepare db-reset seed test css open clean
 
 COMPOSE ?= docker compose
 SERVICE ?= rails
 STEP ?= 1
+APP_URL ?= http://localhost:3000
 
 # Base lifecycle --------------------------------------------------------------
 up:
 	$(COMPOSE) up -d --remove-orphans
+
+dev:
+	$(COMPOSE) up rails bridge sidekiq
 
 down:
 	$(COMPOSE) down --remove-orphans
@@ -22,6 +26,10 @@ ps:
 
 logs:
 	$(COMPOSE) logs -f $(SERVICE)
+
+open:
+	@echo "Opening $(APP_URL)"
+	open "$(APP_URL)"
 
 clean:
 	$(COMPOSE) down --volumes --remove-orphans
@@ -50,3 +58,6 @@ seed:
 
 test:
 	$(COMPOSE) run --rm rails bin/rails test
+
+css:
+	$(COMPOSE) run --rm rails yarn build:css

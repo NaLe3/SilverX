@@ -22,15 +22,49 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
-    <header class="app-shell">
-      <nav class="app-shell__nav">
-        <strong>SilverX Console</strong>
+  <body class="bg-slate-50 text-slate-900">
+    <header class="sticky top-0 z-30 border-b border-white/10 bg-white/80 backdrop-blur-xl">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-4">
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-2 text-xl font-semibold text-slate-900">
+            SilverX Console
+            <%= environment_badge %>
+          </div>
+          <% if user_signed_in? %>
+            <div class="hidden items-center gap-2 md:flex">
+              <%= nav_link_to "Dashboard", admin_dashboard_path %>
+              <%= nav_link_to "Appels", admin_calls_path %>
+            </div>
+          <% end %>
+        </div>
+
         <% if user_signed_in? %>
-          <span><%= current_user.email %> · <%= current_user.role %></span>
-          <%= button_to "Déconnexion", destroy_user_session_path, method: :delete, class: "btn-link" %>
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <p class="text-sm font-semibold text-slate-900"><%= current_user.email %></p>
+              <p class="text-xs text-slate-500 capitalize">Rôle · <%= current_user.role %></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+                <%= user_initials(current_user) %>
+              </div>
+              <%= button_to "Déconnexion", destroy_user_session_path,
+                    method: :delete,
+                    class: "inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" %>
+            </div>
+          </div>
         <% end %>
       </nav>
+
+      <% if user_signed_in? %>
+        <div class="border-t border-slate-100 bg-white px-4 py-3 md:hidden">
+          <div class="flex flex-wrap gap-2">
+            <%= nav_link_to "Dashboard", admin_dashboard_path, class: "w-full justify-center md:w-auto" %>
+            <%= nav_link_to "Appels", admin_calls_path, class: "w-full justify-center md:w-auto" %>
+          </div>
+        </div>
+      <% end %>
+
       <% if notice.present? %>
         <p class="flash flash--notice"><%= notice %></p>
       <% end %>

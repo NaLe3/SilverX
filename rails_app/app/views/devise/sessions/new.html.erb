@@ -1,0 +1,51 @@
+<div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 py-12">
+  <div class="w-full max-w-md space-y-6">
+    <div class="text-center space-y-2">
+      <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">SilverX Console</p>
+      <h1 class="text-2xl font-semibold text-slate-900">Connexion sécurisée</h1>
+      <p class="text-sm text-slate-600">Accède au dashboard temps réel après authentification.</p>
+    </div>
+
+    <div class="bg-white shadow-lg shadow-slate-200/70 rounded-2xl p-8 border border-slate-100 space-y-6">
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <div class="space-y-5">
+          <div>
+            <%= f.label :email, class: "block text-sm font-medium text-slate-700 mb-1" %>
+            <%= f.email_field :email,
+                  autofocus: true,
+                  autocomplete: "email",
+                  class: "w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                  placeholder: "admin@silverx.local" %>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <%= f.label :password, class: "block text-sm font-medium text-slate-700" %>
+              <%= link_to "Mot de passe oublié ?", new_password_path(resource_name), class: "text-xs font-medium text-indigo-600 hover:text-indigo-500" %>
+            </div>
+            <%= f.password_field :password,
+                  autocomplete: "current-password",
+                  class: "w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                  placeholder: "••••••••" %>
+          </div>
+
+          <% if devise_mapping.rememberable? %>
+            <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+              <%= f.check_box :remember_me, class: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+              Se souvenir de moi
+            </label>
+          <% end %>
+        </div>
+
+        <div class="space-y-3 pt-4">
+          <%= f.submit "Se connecter", class: "w-full inline-flex justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 transition-colors" %>
+          <p class="text-center text-xs text-slate-500">Accès réservé aux membres de l’équipe SilverX.</p>
+        </div>
+      <% end %>
+    </div>
+
+    <%= render "devise/shared/links" %>
+  </div>
+</div>
