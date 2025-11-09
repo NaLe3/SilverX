@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "55432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  rails:
+    build: ./rails_app
+    env_file: ./.env
+    command: ["bin/rails", "server", "-b", "0.0.0.0"]
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./rails_app:/app
+    ports:
+      - "3000:3000"
+    # healthcheck facultatif pour lier d'autres services si besoin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  bridge:
+    build: ./bridge_node
+    env_file: ./.env
+    # Ne pas binder ./bridge_node:/app sinon on masque /app/dist construit dans l'image
+    ports:
+      - "8080:8080"
+    # NOTE: volontairement PAS de depends_on: rails
+    # Le bridge doit pouvoir tourner seul (tests/bench TTS ou WS echo)
+    # Pour lier au health Rails plus tard :
+    # depends_on:
+    #   rails:
+    #     condition: service_healthy
+
+  sidekiq:
+    build: ./rails_app
+    env_file: ./.env
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./rails_app:/app

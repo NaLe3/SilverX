@@ -1,0 +1,31 @@
+# Rails
+rails_app/log/*
+rails_app/tmp/*
+rails_app/vendor/bundle
+rails_app/node_modules
+rails_app/storage/*
+rails_app/.byebug_history
+rails_app/.bundle
+rails_app/config/master.key
+
+# Node/TS
+bridge_node/node_modules
+bridge_node/dist
+bridge_node/.tsbuildinfo
+bridge_node/coverage
+
+# Common
+.env
+.DS_Store
+*.log
+coverage
+*.pid
+*.swp
+
+# Docker
+*.env.local
+docker-compose.override.yml
+
+# Editors
+.vscode
+.idea
