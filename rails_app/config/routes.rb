@@ -11,11 +11,15 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "admin/calls#index"
 
   resources :calls, only: [:index, :show, :create] do
     resources :messages, only: [:index, :create]
   end
 
   post "/tools/dispatch" => "tools#dispatch"
+
+  namespace :admin do
+    resources :calls, only: [:index, :show]
+  end
 end

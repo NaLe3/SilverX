@@ -1,0 +1,43 @@
+<div class="mx-auto max-w-5xl px-4 py-8">
+  <div class="mb-6">
+    <%= link_to "← Retour", admin_calls_path, class: "text-sm text-gray-600 hover:text-gray-900" %>
+  </div>
+
+  <h1 class="text-2xl font-semibold mb-2">Call #<%= @call.id %></h1>
+  <p class="text-gray-600 mb-6">External ID: <%= @call.external_id.presence || "—" %> · Status: <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700"><%= @call.status %></span></p>
+
+  <div class="grid grid-cols-1 gap-6">
+    <div class="rounded border border-gray-200">
+      <div class="px-4 py-3 border-b bg-gray-50">
+        <h2 class="text-sm font-medium text-gray-700">Métadonnées</h2>
+      </div>
+      <div class="px-4 py-4">
+        <pre class="text-xs bg-gray-50 p-3 rounded overflow-auto"><%= JSON.pretty_generate(@call.metadata || {}) %></pre>
+      </div>
+    </div>
+
+    <div class="rounded border border-gray-200">
+      <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+        <h2 class="text-sm font-medium text-gray-700">Messages (<%= @messages.size %>)</h2>
+      </div>
+      <div class="divide-y divide-gray-100">
+        <% @messages.each do |m| %>
+          <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm text-gray-900 font-medium"><%= m.role %></div>
+              <div class="text-xs text-gray-500"><%= l(m.created_at, format: :short) rescue m.created_at %></div>
+            </div>
+            <div class="mt-2 text-sm text-gray-800 whitespace-pre-wrap"><%= m.content %></div>
+            <% if m.metadata.present? %>
+              <pre class="mt-2 text-xs bg-gray-50 p-2 rounded overflow-auto"><%= JSON.pretty_generate(m.metadata) %></pre>
+            <% end %>
+          </div>
+        <% end %>
+        <% if @messages.empty? %>
+          <div class="px-4 py-6 text-sm text-gray-500">Aucun message.</div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,35 @@
+<div class="mx-auto max-w-6xl px-4 py-8">
+  <h1 class="text-2xl font-semibold mb-6">Calls</h1>
+
+  <div class="overflow-x-auto rounded border border-gray-200">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External ID</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Messages</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Créé</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-100">
+        <% @calls.each do |call| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-sm text-gray-900"><%= call.id %></td>
+            <td class="px-4 py-3 text-sm text-gray-700"><%= call.external_id.presence || "—" %></td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700"><%= call.status %></span>
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-700"><%= call.messages.size %></td>
+            <td class="px-4 py-3 text-sm text-gray-700"><%= l(call.created_at, format: :short) rescue call.created_at %></td>
+            <td class="px-4 py-3 text-right">
+              <%= link_to "Voir", admin_call_path(call), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
