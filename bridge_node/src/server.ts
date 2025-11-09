@@ -2,6 +2,8 @@ import 'dotenv/config';
 import { createServer } from 'http';
 import { URL } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
+import { createLLMAdapter, createTTSAdapter } from './adapters/factory';
+import type { ChatMessage } from './adapters/types';
 
 const PORT = parseInt(process.env.PORT ?? '8080', 10);
 const HEARTBEAT_INTERVAL_MS = parseInt(process.env.HEARTBEAT_INTERVAL_MS ?? '15000', 10);
@@ -23,6 +25,18 @@ interface ExtWebSocket extends WebSocket {
   isAlive?: boolean;
   callId?: string;
   connectedAt?: number;
+}
+
+// Adapters uniques (fakes par défaut via variables d'env)
+const llmAdapter = createLLMAdapter();
+const ttsAdapter = createTTSAdapter();
+
+function safeJsonParse<T = unknown>(input: string): { ok: true; value: T } | { ok: false; error: Error } {
+  try {
+    return { ok: true, value: JSON.parse(input) as T };
+  } catch (e) {
+    return { ok: false, error: e as Error };
+  }
 }
 
 const httpServer = createServer();
@@ -53,17 +67,81 @@ wss.on('connection', (ws: ExtWebSocket, request) => {
       log('warn', 'backpressure_drop', { call_id: callId, buffered: (ws as WebSocket).bufferedAmount, size });
       return;
     }
-    try {
-      ws.send(data, { binary: isBinary }, (err) => {
-        if (err) {
-          log('error', 'send_error', { call_id: callId, error: err.message });
-          ws.close(1011, 'send failure');
-        }
-      });
-    } catch (e) {
-      const err = e as Error;
-      log('error', 'send_exception', { call_id: callId, error: err.message });
+    // Si binaire: echo direct
+    if (isBinary) {
+      try {
+        ws.send(data, { binary: true }, (err) => {
+          if (err) {
+            log('error', 'send_error', { call_id: callId, error: err.message });
+            ws.close(1011, 'send failure');
+          }
+        });
+      } catch (e) {
+        const err = e as Error;
+        log('error', 'send_exception', { call_id: callId, error: err.message });
+      }
+      return;
     }
+    // Texte: tenter un message JSON protocolaire
+    const text = String(data);
+    const parsed = safeJsonParse<{ type?: string; text?: string; format?: 'pcm16' | 'wav' | 'mp3' }>(text);
+    if (!parsed.ok || !parsed.value || parsed.value.type !== 'chat_tts' || !parsed.value.text) {
+      // Pas notre protocole → echo texte
+      try {
+        ws.send(text, { binary: false }, (err) => {
+          if (err) {
+            log('error', 'send_error', { call_id: callId, error: err.message });
+            ws.close(1011, 'send failure');
+          }
+        });
+      } catch (e) {
+        const err = e as Error;
+        log('error', 'send_exception', { call_id: callId, error: err.message });
+      }
+      return;
+    }
+    // Pipeline: USER TEXT → LLM (fake) → TTS (fake) → JSON meta + AUDIO binaire
+    (async () => {
+      const userText = parsed.value.text as string;
+      const format = parsed.value.format ?? 'pcm16';
+      log('info', 'chat_tts_start', { call_id: callId, format });
+      try {
+        const messages: ChatMessage[] = [{ role: 'user', content: userText }];
+        const llmRes = await llmAdapter.complete(messages, { timeoutMs: 7000 });
+        const replyText = llmRes.message.content;
+        const ttsRes = await ttsAdapter.synthesize(replyText, { format, timeoutMs: 5000 });
+        const meta = JSON.stringify({
+          type: 'chat_tts_result',
+          text: replyText,
+          mimeType: ttsRes.mimeType,
+          bytes: ttsRes.audio.byteLength
+        });
+        ws.send(meta, { binary: false }, (err) => {
+          if (err) {
+            log('error', 'send_error', { call_id: callId, error: err.message });
+            ws.close(1011, 'send failure');
+          }
+        });
+        ws.send(ttsRes.audio, { binary: true }, (err) => {
+          if (err) {
+            log('error', 'send_error', { call_id: callId, error: err.message });
+            ws.close(1011, 'send failure');
+          }
+        });
+        log('info', 'chat_tts_done', { call_id: callId, bytes: ttsRes.audio.byteLength });
+      } catch (e) {
+        const err = e as Error;
+        log('warn', 'chat_tts_error', { call_id: callId, error: err.message });
+        const meta = JSON.stringify({ type: 'chat_tts_error', error: err.message });
+        try {
+          ws.send(meta, { binary: false }, () => {});
+        } catch {
+          // ignore
+        }
+      }
+    })().catch(() => {
+      // déjà loggé
+    });
   });
 
   ws.on('close', (code, reason) => {

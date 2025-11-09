@@ -12,4 +12,10 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  resources :calls, only: [:index, :show, :create] do
+    resources :messages, only: [:index, :create]
+  end
+
+  post "/tools/dispatch" => "tools#dispatch"
 end
