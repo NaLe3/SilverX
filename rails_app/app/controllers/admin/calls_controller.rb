@@ -1,5 +1,5 @@
 module Admin
-  class CallsController < ApplicationController
+  class CallsController < BaseController
     def index
       @calls = Call.order(created_at: :desc).limit(200).includes(:messages)
     end
@@ -10,4 +10,3 @@ module Admin
     end
   end
 end
-

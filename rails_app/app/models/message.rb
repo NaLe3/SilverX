@@ -1,7 +1,11 @@
 class Message < ApplicationRecord
+  ROLES = %w[user assistant system tool].freeze
+
   belongs_to :call
 
-  validates :role, presence: true
-  validates :content, presence: true
-end
+  encrypts :content
 
+  validates :role, presence: true, inclusion: { in: ROLES }
+  validates :content, presence: true
+  validates :metadata, presence: true
+end

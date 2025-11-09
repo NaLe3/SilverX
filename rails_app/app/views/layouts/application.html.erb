@@ -23,6 +23,24 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="app-shell">
+      <nav class="app-shell__nav">
+        <strong>SilverX Console</strong>
+        <% if user_signed_in? %>
+          <span><%= current_user.email %> · <%= current_user.role %></span>
+          <%= button_to "Déconnexion", destroy_user_session_path, method: :delete, class: "btn-link" %>
+        <% end %>
+      </nav>
+      <% if notice.present? %>
+        <p class="flash flash--notice"><%= notice %></p>
+      <% end %>
+      <% if alert.present? %>
+        <p class="flash flash--alert"><%= alert %></p>
+      <% end %>
+    </header>
+
+    <main class="app-shell__content">
+      <%= yield %>
+    </main>
   </body>
 </html>

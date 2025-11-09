@@ -23,7 +23,6 @@ class CallsController < ApplicationController
   private
 
   def call_params
-    params.permit(:external_id, :status, metadata: {})
+    params.permit(:external_id, :status, :customer_name, :customer_phone, :customer_email, metadata: {})
   end
 end
-

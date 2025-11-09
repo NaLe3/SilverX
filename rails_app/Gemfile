@@ -29,6 +29,8 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "redis", "~> 5.1"
 gem "sidekiq", "~> 7.3"
 
+gem "devise"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
