@@ -22,4 +22,8 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :calls, only: [:index, :show]
   end
+
+  # Webhooks téléphonie (Twilio-like)
+  post "/voice/inbound" => "voice#inbound"
+  post "/voice/continue" => "voice#continue"
 end
